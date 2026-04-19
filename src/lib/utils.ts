@@ -15,4 +15,4 @@ export function cn(...inputs: ClassValue[]) {
  * Quartic Out menghasilkan animasi yang masuk dengan cepat lalu melambat dengan sangat halus di akhir.
  * Setara dengan cubic-bezier(0.25, 1, 0.5, 1)
  */
-export const quarticOut = [0.25, 1, 0.5, 1];
+export const quarticOut: [number, number, number, number] = [0.25, 1, 0.5, 1];
