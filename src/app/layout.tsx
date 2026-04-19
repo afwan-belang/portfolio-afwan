@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={cn("scroll-smooth", "font-sans", geist.variable)}>
+    <html lang="id" className={cn("scroll-smooth dark", "font-sans", geist.variable)}>
       <body className={`${inter.className} bg-[#0F172A] text-white antialiased`}>
         <Navbar />
         {children}
