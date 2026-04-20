@@ -5,7 +5,7 @@ import Navbar from "../app/components/organisms/Navbar";
 import Footer from "../app/components/organisms/Footer";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 
 // Optimasi font bawaan Next.js
