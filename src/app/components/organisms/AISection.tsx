@@ -40,7 +40,7 @@ export default function AISection() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 120000); // Timeout di set 120 detik (2 Menit)
+    }, 600000); // Timeout di set 120 detik (2 Menit)
 
     try {
       const response = await fetch('/api/chat', {
