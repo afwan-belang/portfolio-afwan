@@ -40,7 +40,7 @@ export default function AISection() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 120000);
+    }, 120000); // Timeout di set 120 detik (2 Menit)
 
     try {
       const response = await fetch('/api/chat', {
@@ -58,23 +58,62 @@ export default function AISection() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
+      let buffer = ''; // Buffer untuk merangkai teks yang terpotong
 
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
+
         if (value) {
-          const chunk = decoder.decode(value);
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1].content += chunk;
-            return updated;
-          });
+          buffer += decoder.decode(value, { stream: true });
+
+          // Pisahkan stream berdasarkan baris baru (format standar SSE)
+          const lines = buffer.split('\n');
+
+          // Simpan baris terakhir ke dalam buffer jika JSON-nya terpotong di tengah jalan
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+
+            // 1. Abaikan baris kosong atau sinyal ping OpenRouter
+            if (!trimmedLine || trimmedLine.includes('OPENROUTER PROCESSING')) {
+              continue;
+            }
+
+            // 2. Hanya proses baris yang berisi data dari AI
+            if (trimmedLine.startsWith('data: ')) {
+              const dataStr = trimmedLine.slice(6); // Potong teks "data: " di depannya
+
+              // 3. Jika stream selesai, hentikan
+              if (dataStr === '[DONE]') continue;
+
+              try {
+                // 4. Ubah teks JSON menjadi objek JavaScript
+                const parsedData = JSON.parse(dataStr);
+
+                // 5. HANYA ekstrak isi pesan (content). Abaikan reasoning, token, dan metadata.
+                const content = parsedData.choices?.[0]?.delta?.content;
+
+                if (content) {
+                  setMessages((prev) => {
+                    const updated = [...prev];
+                    updated[updated.length - 1].content += content;
+                    return updated;
+                  });
+                }
+              } catch (err) {
+                // Jika terjadi error saat parse JSON (karena chunk terpotong), biarkan saja.
+                // Potongan ini akan dirangkai kembali di putaran loop selanjutnya.
+              }
+            }
+          }
         }
       }
     } catch (err) {
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
-          setError('Server AI memakan waktu lebih dari 60 detik. Request otomatis dibatalkan.');
+          setError('Server AI memakan waktu lebih dari 120 detik. Request otomatis dibatalkan.');
         } else {
           setError(err.message);
         }
@@ -128,22 +167,54 @@ export default function AISection() {
                 className={`flex flex-col ${msg.role === 'user' ? 'items-end self-end' : 'items-start'} max-w-[95%] md:max-w-[85%]`}
               >
                 <div className={`${msg.role === 'user'
-                    ? 'bg-gradient-to-br from-primary to-primary-container p-4 rounded-2xl rounded-tr-none text-on-primary font-medium shadow-lg shadow-primary/10 overflow-hidden'
-                    : 'bg-surface-container-high/60 backdrop-blur-md p-5 md:p-6 rounded-2xl rounded-tl-none border border-outline-variant/15 text-on-surface shadow-lg shadow-black/20 w-full overflow-hidden'
+                  ? 'bg-gradient-to-br from-primary to-primary-container p-4 rounded-2xl rounded-tr-none text-on-primary font-medium shadow-lg shadow-primary/10 overflow-hidden'
+                  : 'bg-surface-container-high/60 backdrop-blur-md p-5 md:p-6 rounded-2xl rounded-tl-none border border-outline-variant/15 text-on-surface shadow-lg shadow-black/20 w-full overflow-hidden'
                   }`}>
                   {msg.role === 'user' ? (
                     <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                   ) : (
-                    <div className="prose prose-invert max-w-full break-words
-                      prose-p:leading-relaxed prose-p:text-on-surface-variant 
-                      prose-headings:text-on-surface prose-headings:font-bold
-                      prose-strong:text-on-surface 
-                      prose-ul:pl-4 prose-ol:pl-4 prose-li:marker:text-primary
-                      prose-a:text-primary hover:prose-a:text-primary-container transition-colors
-                      prose-pre:bg-surface-container-lowest prose-pre:border prose-pre:border-outline-variant/20 prose-pre:shadow-inner prose-pre:overflow-x-auto prose-pre:max-w-full
-                      prose-code:text-primary-container prose-code:bg-surface-container-low prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
-                      prose-pre:prose-code:bg-transparent prose-pre:prose-code:text-on-surface prose-pre:prose-code:p-0">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    // PERUBAHAN UTAMA: Membuang class "prose" dan memasukkan Custom Components
+                    <div className="w-full break-words text-on-surface-variant">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ node, ...props }) => <p className="mb-4 leading-relaxed last:mb-0" {...props} />,
+                          h1: ({ node, ...props }) => <h1 className="text-2xl md:text-3xl font-black text-on-surface mb-4 mt-6 tracking-tight" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-3 mt-5 tracking-tight" {...props} />,
+                          h3: ({ node, ...props }) => <h3 className="text-lg font-bold text-on-surface mb-3 mt-4" {...props} />,
+                          strong: ({ node, ...props }) => <strong className="font-bold text-primary" {...props} />,
+                          ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 space-y-1.5 marker:text-primary" {...props} />,
+                          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-4 space-y-1.5 marker:text-primary" {...props} />,
+                          li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                          blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-primary/50 pl-4 italic text-on-surface-variant/80 mb-4 bg-surface-container-low/30 py-2 pr-2 rounded-r-lg" {...props} />,
+                          a: ({ node, ...props }) => <a className="text-primary hover:text-primary-container transition-colors underline decoration-primary/30 underline-offset-4" target="_blank" rel="noopener noreferrer" {...props} />,
+                          pre: ({ node, ...props }) => (
+                            <div className="w-full overflow-x-auto bg-[#0b1326] border border-outline-variant/20 rounded-xl mb-4 shadow-inner p-4 scrollbar-thin scrollbar-thumb-outline-variant scrollbar-track-transparent">
+                              <pre className="w-fit min-w-full text-sm" {...props} />
+                            </div>
+                          ),
+                          code: ({
+                            node,
+                            inline,
+                            className,
+                            children,
+                            ...props
+                          }: React.ComponentPropsWithoutRef<'code'> & {
+                            inline?: boolean;
+                            node?: unknown;
+                          }) => {
+                            return !inline ? (
+                              <code className={`block font-mono text-[#bacac5] ${className || ''}`} {...props}>
+                                {children}
+                              </code>
+                            ) : (
+                              <code className="bg-surface-container-low text-primary-container px-1.5 py-0.5 rounded-md font-mono text-[0.85em] border border-primary/10" {...props}>
+                                {children}
+                              </code>
+                            )
+                          }
+                        }}
+                      >
                         {msg.content}
                       </ReactMarkdown>
                     </div>
