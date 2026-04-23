@@ -8,14 +8,19 @@ import { quarticOut } from '@/lib/utils';
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Logika Scroll Spy (Mendeteksi bagian mana yang sedang dilihat di layar)
+  // Logika Scroll Spy & Deteksi Scroll Background
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['projects', 'experience', 'ai-playground'];
+      // 1. Deteksi apakah sudah di-scroll ke bawah untuk merombak tampilan Navbar
+      setIsScrolled(window.scrollY > 50);
+
+      // 2. Target Section yang akan dilacak
+      const sections = ['skills', 'projects', 'ai-playground'];
       let current = '';
 
-      // Jika scroll masih di atas (di area Hero), matikan semua indikator menu
+      // Jika masih di paling atas layar, hilangkan status aktif
       if (window.scrollY < 100) {
         setActiveSection('');
         return;
@@ -25,8 +30,8 @@ export default function Navbar() {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
-          // Offset 200px agar menu aktif sebelum elemen menyentuh atas layar persis
-          if (rect.top <= 200 && rect.bottom >= 200) {
+          // Offset 250px agar transisi warna menu terasa natural saat membaca
+          if (rect.top <= 250 && rect.bottom >= 250) {
             current = section;
           }
         }
@@ -44,17 +49,17 @@ export default function Navbar() {
   }, []);
 
   const navItems = [
+    { name: 'Skills', id: 'skills' },
     { name: 'Projects', id: 'projects' },
-    { name: 'Experience', id: 'experience' }, // Jika bagian ini belum ada di page.tsx, buat id="experience" nanti
     { name: 'AI Twin', id: 'ai-playground' },
   ];
 
-  // Fungsi untuk scroll halus saat menu diklik (dengan kompensasi tinggi Navbar)
+  // Fungsi untuk scroll halus dengan kompensasi tinggi Navbar melayang
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      // Menghitung posisi Y dikurangi 100px agar konten tidak tertutup Navbar
+      // Offset -100px agar judul section tidak tertutup oleh navbar
       const y = element.getBoundingClientRect().top + window.scrollY - 100;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -65,34 +70,36 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: quarticOut }}
-      className="fixed top-0 w-full z-50 bg-[#0b1326]/60 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_15px_rgba(45,212,191,0.05)]"
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled
+        ? 'bg-[#0b1326]/80 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_15px_rgba(87,241,219,0.05)] border-b border-outline-variant/15 py-3'
+        : 'bg-transparent py-6'
+        }`}
     >
-      <div className="flex justify-between items-center px-6 md:px-8 py-4 max-w-7xl mx-auto">
-        
+      <div className="flex justify-between items-center px-6 md:px-8 max-w-7xl mx-auto">
+
         {/* Logo (Kembali ke Atas) */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           onClick={(e) => {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="text-xl font-bold tracking-tighter text-primary cursor-pointer hover:opacity-80 transition-opacity"
+          className="text-xl font-black tracking-tighter text-primary cursor-pointer hover:opacity-80 transition-opacity"
         >
           DevArchitect
         </Link>
-        
-        {/* Desktop Menu */}
-        <div className="hidden md:flex gap-8 items-center">
+
+        {/* Desktop Menu Kapsul */}
+        <div className="hidden md:flex gap-2 items-center bg-surface-container-low/40 px-3 py-1.5 rounded-full border border-outline-variant/20 backdrop-blur-md shadow-inner">
           {navItems.map((item) => (
             <a
               key={item.id}
               href={`#${item.id}`}
               onClick={(e) => handleClick(e, item.id)}
-              className={`tracking-tight transition-all duration-300 ${
-                activeSection === item.id
-                  ? 'text-primary border-b-2 border-primary pb-1 font-medium'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
+              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${activeSection === item.id
+                ? 'bg-primary/10 text-primary drop-shadow-[0_0_8px_rgba(87,241,219,0.4)]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-white/5'
+                }`}
             >
               {item.name}
             </a>
@@ -101,8 +108,8 @@ export default function Navbar() {
 
         {/* CTA Buttons */}
         <div className="flex items-center gap-4">
-          <Terminal className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer w-6 h-6 hidden sm:block" />
-          <button className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-bold px-6 py-2 rounded-md hover:scale-95 duration-200 transition-all shadow-lg shadow-primary/20">
+          <Terminal className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer w-5 h-5 hidden sm:block" />
+          <button className="bg-primary/10 border border-primary/30 text-primary font-bold px-6 py-2 rounded-full hover:bg-primary hover:text-[#0b1326] duration-300 transition-all shadow-lg shadow-primary/10 text-sm">
             Hire Me
           </button>
         </div>

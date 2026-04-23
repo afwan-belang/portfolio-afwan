@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import ProjectCard from './components/molecules/ProjectCard';
 import Hero from './components/organisms/Hero';
 import AISection from './components/organisms/AISection';
+import SkillsMarquee from './components/organisms/SkillsMarquee';
 
 interface Project {
   id: string;
@@ -42,21 +43,21 @@ export default function Home() {
 
   return (
     <main className="min-h-screen selection:bg-primary-container selection:text-on-primary-container relative overflow-hidden bg-background">
-      
+
       {/* Background Ambience (DevArchitect Style) */}
       <div className="fixed inset-0 pointer-events-none z-0">
-         <div className="absolute top-[-20%] left-[-10%] w-[40rem] h-[40rem] bg-primary/5 rounded-full blur-[150px]" />
-         <div className="absolute bottom-[-20%] right-[-10%] w-[50rem] h-[50rem] bg-secondary-container/10 rounded-full blur-[150px]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[40rem] h-[40rem] bg-primary/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50rem] h-[50rem] bg-secondary-container/10 rounded-full blur-[150px]" />
       </div>
 
       {/* Hero Section yang sudah dipisah ke komponen tersendiri */}
       <Hero />
-
+      <SkillsMarquee />
       {/* Project Grid Section (DevArchitect Style) */}
       <section className="py-24 bg-surface-container-low/40 relative z-10 border-y border-outline-variant/10" id="projects">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -64,18 +65,15 @@ export default function Home() {
             className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-4"
           >
             <div>
-              <h2 className="text-[1.75rem] font-bold tracking-tight text-on-surface mb-2">Featured Work</h2>
+              <h2 className="text-[1.75rem] font-bold tracking-tight text-on-surface mb-2">My Project</h2>
               <div className="w-12 h-1 bg-primary rounded-full" />
             </div>
-            <p className="text-on-surface-variant max-w-xs text-sm uppercase tracking-tighter">
-              A curation of engineered solutions and artistic interfaces.
-            </p>
           </motion.div>
 
           {isLoading ? (
-             <div className="text-center text-on-surface-variant animate-pulse font-mono tracking-widest text-sm">
-                [ LOADING DATABASE ]
-             </div>
+            <div className="text-center text-on-surface-variant animate-pulse font-mono tracking-widest text-sm">
+              [ LOADING DATABASE ]
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((proj, idx) => (
@@ -96,7 +94,6 @@ export default function Home() {
 
       {/* Bagian ini akan kita rombak di Fase 3 */}
       <AISection />
-      
     </main>
   );
 }

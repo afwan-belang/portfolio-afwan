@@ -19,13 +19,10 @@ export default function Hero() {
         transition={{ duration: 1, ease: quarticOut }}
         className="space-y-6 md:space-y-8"
       >
-        <div className="inline-block px-3 py-1 rounded-full bg-secondary-container/30 border border-outline-variant/30 text-on-secondary-container text-[0.75rem] uppercase tracking-[0.1em] font-medium backdrop-blur-md">
-          Open to Work
-        </div>
 
         {/* Typografi Hero dengan efek MagicUI Text3DFlip */}
         <div className="text-4xl sm:text-5xl md:text-[3.5rem] leading-[1.1] font-extrabold tracking-[-0.04em]">
-          <span className="text-on-surface block mb-2">Crafting</span>
+          <span className="text-on-surface block mb-2">Building</span>
           <Text3DFlip
             className="font-sans"
             textClassName="text-on-surface-variant opacity-80"
@@ -35,27 +32,15 @@ export default function Hero() {
             staggerFrom="first"
             transition={{ type: "spring", damping: 25, stiffness: 160 }}
           >
-            High-Performance Stable Web Experiences
+            Fast Reliable <br /> Modern Web Solutions
           </Text3DFlip>
         </div>
 
         <p className="text-on-surface-variant text-base md:text-lg leading-relaxed max-w-lg">
-          A Full-Stack Developer dedicated to architectural excellence. Building scalable systems with precise digital craftsmanship and ethereal aesthetics.
+          Full-stack developer specializing in the JavaScript ecosystem. I craft clean, responsive, and performance-driven applications from code to deployment.
         </p>
 
         {/* Tech Stack Chips */}
-        <div className="flex flex-wrap gap-3 pt-2">
-          {['JavaScript', 'React', 'Node.js'].map((tech) => (
-            <div key={tech} className="flex items-center gap-2 px-4 py-2 glass-card rounded-full hover:bg-white/5 transition-colors cursor-default">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-sm font-medium text-slate-200">{tech}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-2 px-4 py-2 glass-card rounded-full hover:bg-white/5 transition-colors cursor-default">
-            <Database className="text-primary-container w-4 h-4" />
-            <span className="text-sm font-medium text-slate-200">Express / Spring Boot</span>
-          </div>
-        </div>
       </motion.div>
 
       {/* Kolom Kanan: Visual & Asymmetrical Element */}
@@ -86,22 +71,7 @@ export default function Hero() {
 
         {/* Asymmetrical Floating Element (Lighthouse Score) */}
         {/* UPDATE: Memperkecil p-6 menjadi p-4, dan mengecilkan ukuran teks agar lebih rapi */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 glass-card p-4 rounded-xl shadow-2xl hidden sm:block border border-primary/20 backdrop-blur-2xl"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center">
-              <Gauge className="text-primary w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-widest font-semibold">Optimized</div>
-              <div className="text-base md:text-lg font-bold text-primary">99 Lighthouse</div>
-            </div>
-          </div>
-        </motion.div>
+
       </motion.div>
 
     </section>
